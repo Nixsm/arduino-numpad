@@ -58,12 +58,9 @@ void setup() {
   // Start the keyboard library
   Keyboard.begin();
 }
-// Using this to read a row from the keyboard matrix
-int strobeRow = 0;
 
-void loop() {
-  unsigned long tickNow = millis();
-  
+
+void checkNumlockLed() {
   // Read all led status
   int statusLed = Keyboard.getKeyboardLeds();
 
@@ -75,10 +72,16 @@ void loop() {
     } else {
       digitalWrite(NUM_LOCK_LED, LOW);
     }
-	// Update the last status
+  // Update the last status
     ledStatus = statusLed;
   }
+}
 
+// Using this to read a row from the keyboard matrix
+int strobeRow = 0;
+
+void loop() {
+  unsigned long tickNow = millis();
   // Since we use non zero to indicate pressed state, we need
   // to handle the edge case where millis() returns 0
   if (tickNow == 0) tickNow = 1;
@@ -90,12 +93,9 @@ void loop() {
   // Set the row to LOW
   digitalWrite(strobePins[strobeRow], LOW);
   delay(2); 
-  
-  // Variable to loop
-  int cnt;
 
   // Go through all columns to read a input
-  for (cnt = 0; cnt < COLUMNS; cnt++) {
+  for (int cnt = 0; cnt < COLUMNS; cnt++) {
     // Ignore state change for pin if in debounce period
     if (keyState[strobeRow][cnt] != 0)
       if (debounce(tickNow, keyState[strobeRow][cnt])) {
@@ -114,6 +114,9 @@ void loop() {
       }
     }
   }
+
+  // Check the numlock led
+  checkNumlockLed();
 
   // Set the row back to HIGH
   digitalWrite(strobePins[strobeRow], HIGH);
